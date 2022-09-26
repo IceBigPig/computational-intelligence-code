@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import openpyxl
 
 # 群体规模
 N = 30
@@ -11,7 +12,7 @@ C_MIN = -10.0
 # 交配概率
 Mating_Probability = 0.9
 # 变异概率
-Variation_Probability = 0.4
+Variation_Probability = 0.01
 
 
 def getEval(arr):
@@ -115,11 +116,21 @@ class genetic_model:
 
 
 if __name__ == '__main__':
-    genetic = genetic_model()
-    genetic.init_model()
-    for i in range(0, 60000):
-        genetic.select()
-        genetic.mating()
-        genetic.variation()
-        genetic.reevaluation()
-        print("\nBest=", genetic.Eval_Best)
+    # 创建一个工作簿
+    f = openpyxl.Workbook()
+    table = f.active
+    table.title = 'GA_2'
+    for j in range(0, 6):
+        Variation_Probability += 0.1
+        genetic = genetic_model()
+        genetic.init_model()
+        for i in range(0, 10000):
+            genetic.select()
+            genetic.mating()
+            genetic.variation()
+            genetic.reevaluation()
+            print("\nBest=", genetic.Eval_Best)
+            table.cell(row=i+1, column=j+1).value = genetic.Eval_Best
+    del genetic
+    # 保存文件
+    f.save('GA_2_res.xlsx')

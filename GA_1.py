@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import openpyxl
 
 # 群体规模
 N = 20
@@ -50,7 +51,6 @@ class genetic_model:
             Eval_all += self.Eval[i]
         for i in range(0, N):
             self.Proportion[i] = self.Eval[i] / Eval_all
-        print("粒子比例值:\n", self.Proportion)
         temp_arr = []
         for i in range(0, N):
             rand_num = random.uniform(0, 1)
@@ -58,7 +58,6 @@ class genetic_model:
             for j in range(0, N):
                 if aim <= rand_num <= aim + self.Proportion[j]:
                     temp_arr.append(j)
-                    print(j, rand_num)
                     break
                 aim += self.Proportion[j]
         # 更新粒子群体
@@ -67,7 +66,6 @@ class genetic_model:
             self.C[i] = temp_C[temp_arr[i]]
 
     def mating(self):
-        print(self.C)
         temp_probability = np.zeros(N, dtype=bool)
         for i in range(0, N):
             # 达到交配概率的进行交配标记
@@ -83,17 +81,13 @@ class genetic_model:
                 mating_pop.append(j)
                 if len(mating_pop) == 2:
                     bit = random.randint(0, D - 1)
-                    print("交配粒子：", mating_pop)
                     self.mating_action(bit, mating_pop[0], mating_pop[1])
                     # 清空临时交配粒子记录
                     mating_pop = []
             else:
                 continue
-        print(temp_probability)
-        print(self.C)
 
     def mating_action(self, bit, index_one, index_two):
-        print("bit=", bit)
         index = D - bit - 1
         for i in range(0, D):
             if i >= index:
@@ -123,11 +117,22 @@ class genetic_model:
 
 
 if __name__ == '__main__':
-    genetic = genetic_model()
-    genetic.init_model()
-    for i in range(0, 10000):
-        genetic.select()
-        genetic.mating()
-        genetic.variation()
-        genetic.reevaluation()
-        print("\nBest=", genetic.Eval_Best)
+    # 创建一个工作簿
+    f = openpyxl.Workbook()
+    table = f.active
+    table.title = 'GA_1'
+
+    for j in range(0, 6):
+        Variation_Probability += 0.1
+        genetic = genetic_model()
+        genetic.init_model()
+        for i in range(0, 10000):
+            genetic.select()
+            genetic.mating()
+            genetic.variation()
+            genetic.reevaluation()
+            print("\nBest=", genetic.Eval_Best)
+            table.cell(row=i+1, column=j+1).value = genetic.Eval_Best
+        del genetic
+    # 保存文件
+    f.save('GA_1_res.xlsx')
